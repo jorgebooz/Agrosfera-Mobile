@@ -4,12 +4,17 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import { generateSimulatedSensors } from '../services/sensorService';
+import { getCurrentWeather } from '../services/weatherService';
 import { lightTheme } from '../theme';
 import { SensorData, SensorStatus } from '../types/sensor';
+import { WeatherData } from '../types/weather';
 import { getStatusLabel } from '../utils/status';
 
 export function DashboardScreen() {
   const [sensors, setSensors] = useState<SensorData[]>([]);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+
   const isLoading = useScreenLoading();
 
   useEffect(() => {
@@ -20,6 +25,20 @@ export function DashboardScreen() {
     }, 8000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    async function loadWeather() {
+      try {
+        setWeatherError(null);
+        const data = await getCurrentWeather();
+        setWeather(data);
+      } catch {
+        setWeatherError('Não foi possível carregar os dados climáticos agora.');
+      }
+    }
+
+    loadWeather();
   }, []);
 
   const summary = useMemo(() => {
@@ -67,6 +86,54 @@ export function DashboardScreen() {
         <Text style={styles.statusDescription}>
           {getStatusDescription(summary.generalStatus)}
         </Text>
+      </View>
+
+      <View style={styles.weatherCard}>
+        <View style={styles.weatherHeader}>
+          <View>
+            <Text style={styles.weatherLabel}>Clima externo</Text>
+            <Text style={styles.weatherCity}>
+              {weather?.city || 'Cidade não carregada'}
+            </Text>
+          </View>
+
+          <Text style={styles.weatherTemperature}>
+            {weather ? `${weather.temperature}°C` : '--°C'}
+          </Text>
+        </View>
+
+        {weatherError ? (
+          <Text style={styles.weatherError}>{weatherError}</Text>
+        ) : (
+          <>
+            <Text style={styles.weatherDescription}>
+              {weather?.description || 'Aguardando dados climáticos'}
+            </Text>
+
+            <View style={styles.weatherDetails}>
+              <View style={styles.weatherDetailItem}>
+                <Text style={styles.weatherDetailValue}>
+                  {weather ? `${weather.humidity}%` : '--'}
+                </Text>
+                <Text style={styles.weatherDetailLabel}>Umidade</Text>
+              </View>
+
+              <View style={styles.weatherDetailItem}>
+                <Text style={styles.weatherDetailValue}>
+                  {weather ? `${weather.feelsLike}°C` : '--'}
+                </Text>
+                <Text style={styles.weatherDetailLabel}>Sensação</Text>
+              </View>
+
+              <View style={styles.weatherDetailItem}>
+                <Text style={styles.weatherDetailValue}>
+                  {weather ? `${weather.windSpeed} m/s` : '--'}
+                </Text>
+                <Text style={styles.weatherDetailLabel}>Vento</Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       <View style={styles.metricsGrid}>
@@ -220,6 +287,70 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     fontSize: 15,
     lineHeight: 21,
+  },
+  weatherCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: theme.spacing.lg,
+  },
+  weatherHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  weatherLabel: {
+    color: theme.colors.textMuted,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: theme.spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  weatherCity: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  weatherTemperature: {
+    color: theme.colors.primary,
+    fontSize: 34,
+    fontWeight: '900',
+  },
+  weatherDescription: {
+    color: theme.colors.textMuted,
+    fontSize: 15,
+    lineHeight: 21,
+    textTransform: 'capitalize',
+    marginBottom: theme.spacing.md,
+  },
+  weatherError: {
+    color: theme.colors.danger,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  weatherDetails: {
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+  },
+  weatherDetailItem: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.sm,
+  },
+  weatherDetailValue: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: theme.spacing.xs,
+  },
+  weatherDetailLabel: {
+    color: theme.colors.textMuted,
+    fontSize: 12,
   },
   metricsGrid: {
     flexDirection: 'row',
