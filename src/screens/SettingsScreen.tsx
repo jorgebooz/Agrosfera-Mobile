@@ -48,10 +48,10 @@ export function SettingsScreen() {
       setIsSavingCity(true);
       await saveStoredDefaultCity(formattedCity);
 
-      Alert.alert(
-        'Cidade salva',
-        'A cidade padrão foi salva localmente com AsyncStorage.'
-      );
+    Alert.alert(
+      'Cidade salva',
+      'A cidade padrão foi atualizada com sucesso.'
+    );
     } catch {
       Alert.alert(
         'Erro ao salvar',
@@ -124,8 +124,8 @@ export function SettingsScreen() {
         <Text style={styles.cardTitle}>Sobre o app</Text>
         <Text style={styles.cardDescription}>
           O Agrosfera Mobile monitora um ambiente de cultivo controlado usando
-          dados climáticos, sensores IoT simulados, persistência local e
-          conexão conceitual com a indústria espacial.
+          dados climáticos, sensores inteligentes, histórico de leituras e
+          conexão com a indústria espacial.
         </Text>
 
         <View style={styles.techList}>

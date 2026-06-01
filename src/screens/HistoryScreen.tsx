@@ -65,7 +65,7 @@ export function HistoryScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Histórico</Text>
       <Text style={styles.subtitle}>
-        Leituras dos sensores salvas localmente com AsyncStorage.
+         Acompanhe as leituras salvas dos sensores do cultivo.
       </Text>
 
       {history.length > 0 && (
@@ -79,7 +79,7 @@ export function HistoryScreen() {
           <Text style={styles.emptyTitle}>Nenhuma leitura salva</Text>
           <Text style={styles.emptyDescription}>
             Acesse a tela Monitoramento e toque em “Salvar leitura no histórico”
-            para registrar dados localmente.
+            para acompanhar os dados depois.
           </Text>
         </View>
       ) : (
