@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 import { LoadingScreen } from './src/components/LoadingScreen';
+import { ThemeProvider } from './src/contexts/ThemeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
 export default function App() {
@@ -20,9 +21,9 @@ export default function App() {
   }
 
   return (
-    <>
+    <ThemeProvider>
       <AppNavigator />
-      <StatusBar style="dark" />
-    </>
+      <StatusBar style="auto" />
+    </ThemeProvider>
   );
 }

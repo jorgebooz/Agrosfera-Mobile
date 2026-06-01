@@ -1,30 +1,32 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import { useAppTheme } from '../contexts/ThemeContext';
 import { AlertsScreen } from '../screens/AlertsScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
 import { MonitoringScreen } from '../screens/MonitoringScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
-import { lightTheme } from '../theme';
 import { RootTabParamList } from '../types/navigation';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export function AppNavigator() {
+  const { theme } = useAppTheme();
+
   return (
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
           headerStyle: {
-            backgroundColor: lightTheme.colors.surface,
+            backgroundColor: theme.colors.surface,
           },
-          headerTintColor: lightTheme.colors.text,
-          tabBarActiveTintColor: lightTheme.colors.primary,
-          tabBarInactiveTintColor: lightTheme.colors.textMuted,
+          headerTintColor: theme.colors.text,
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarInactiveTintColor: theme.colors.textMuted,
           tabBarStyle: {
-            backgroundColor: lightTheme.colors.surface,
-            borderTopColor: lightTheme.colors.border,
+            backgroundColor: theme.colors.surface,
+            borderTopColor: theme.colors.border,
           },
         }}
       >
