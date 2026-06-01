@@ -6,8 +6,12 @@ import { lightTheme } from '../theme';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
 
+import { LoadingScreen } from '../components/LoadingScreen';
+import { useScreenLoading } from '../hooks/useScreenLoading';
+
 export function MonitoringScreen() {
   const [sensors, setSensors] = useState<SensorData[]>([]);
+  const isLoading = useScreenLoading();
 
   useEffect(() => {
     setSensors(generateSimulatedSensors());
@@ -18,6 +22,10 @@ export function MonitoringScreen() {
 
     return () => clearInterval(interval);
   }, []);
+
+  if (isLoading) {
+    return <LoadingScreen message="Atualizando sensores do cultivo..." />;
+  }
 
   return (
     <View style={styles.container}>
