@@ -10,20 +10,24 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 
 import { LoadingScreen } from '../components/LoadingScreen';
+import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import {
   clearSensorHistory,
   getSensorHistory,
 } from '../storage/historyStorage';
-import { lightTheme } from '../theme';
+import { AppTheme } from '../theme';
 import { SensorHistoryRecord } from '../types/history';
 import { SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
 
 export function HistoryScreen() {
+  const { theme } = useAppTheme();
+
   const [history, setHistory] = useState<SensorHistoryRecord[]>([]);
 
   const isLoading = useScreenLoading();
+  const styles = createStyles(theme);
 
   const loadHistory = useCallback(async () => {
     const storedHistory = await getSensorHistory();
@@ -57,15 +61,28 @@ export function HistoryScreen() {
     );
   }
 
+  function getStatusTextStyle(status: SensorStatus) {
+    switch (status) {
+      case 'ideal':
+        return { color: theme.colors.success };
+      case 'attention':
+        return { color: theme.colors.warning };
+      case 'critical':
+        return { color: theme.colors.danger };
+      default:
+        return { color: theme.colors.textMuted };
+    }
+  }
+
   if (isLoading) {
-    return <LoadingScreen message="Buscando histórico local..." />;
+    return <LoadingScreen message="Buscando histórico de leituras..." />;
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Histórico</Text>
       <Text style={styles.subtitle}>
-         Acompanhe as leituras salvas dos sensores do cultivo.
+        Acompanhe as leituras salvas dos sensores do cultivo.
       </Text>
 
       {history.length > 0 && (
@@ -172,8 +189,6 @@ export function HistoryScreen() {
   );
 }
 
-const theme = lightTheme;
-
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
@@ -184,164 +199,153 @@ function formatDate(date: string): string {
   }).format(new Date(date));
 }
 
-function getStatusTextStyle(status: SensorStatus) {
-  switch (status) {
-    case 'ideal':
-      return { color: theme.colors.success };
-    case 'attention':
-      return { color: theme.colors.warning };
-    case 'critical':
-      return { color: theme.colors.danger };
-    default:
-      return { color: theme.colors.textMuted };
-  }
+function createStyles(theme: AppTheme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      padding: theme.spacing.lg,
+    },
+    title: {
+      color: theme.colors.primary,
+      fontSize: 28,
+      fontWeight: '800',
+      marginBottom: theme.spacing.sm,
+    },
+    subtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 16,
+      lineHeight: 22,
+      marginBottom: theme.spacing.lg,
+    },
+    clearButton: {
+      backgroundColor: theme.colors.tertiary,
+      borderRadius: theme.radius.md,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      alignItems: 'center',
+      marginBottom: theme.spacing.lg,
+    },
+    clearButtonText: {
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '800',
+    },
+    emptyCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    emptyTitle: {
+      color: theme.colors.text,
+      fontSize: 18,
+      fontWeight: '800',
+      marginBottom: theme.spacing.sm,
+    },
+    emptyDescription: {
+      color: theme.colors.textMuted,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    listContent: {
+      gap: theme.spacing.md,
+      paddingBottom: theme.spacing.xl,
+    },
+    historyCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.radius.lg,
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    historyHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+      marginBottom: theme.spacing.md,
+    },
+    historyTitle: {
+      color: theme.colors.text,
+      fontSize: 16,
+      fontWeight: '800',
+      marginBottom: theme.spacing.xs,
+    },
+    historyDate: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+    },
+    totalBadge: {
+      backgroundColor: theme.colors.background,
+      borderRadius: 999,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      alignSelf: 'flex-start',
+    },
+    totalBadgeText: {
+      color: theme.colors.primary,
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      marginBottom: theme.spacing.md,
+    },
+    summaryItem: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      borderRadius: theme.radius.md,
+      padding: theme.spacing.sm,
+      alignItems: 'center',
+    },
+    summaryValue: {
+      fontSize: 22,
+      fontWeight: '900',
+      marginBottom: theme.spacing.xs,
+    },
+    summaryLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+    },
+    idealText: {
+      color: theme.colors.success,
+    },
+    warningText: {
+      color: theme.colors.warning,
+    },
+    criticalText: {
+      color: theme.colors.danger,
+    },
+    sensorList: {
+      gap: theme.spacing.sm,
+    },
+    sensorRow: {
+      backgroundColor: theme.colors.background,
+      borderRadius: theme.radius.md,
+      padding: theme.spacing.sm,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+    },
+    sensorInfo: {
+      flex: 1,
+    },
+    sensorName: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '700',
+      marginBottom: theme.spacing.xs,
+    },
+    sensorStatus: {
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    sensorValue: {
+      color: theme.colors.primary,
+      fontSize: 16,
+      fontWeight: '900',
+    },
+  });
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
-  },
-  title: {
-    color: theme.colors.primary,
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: theme.spacing.sm,
-  },
-  subtitle: {
-    color: theme.colors.textMuted,
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: theme.spacing.lg,
-  },
-  clearButton: {
-    backgroundColor: theme.colors.tertiary,
-    borderRadius: theme.radius.md,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  clearButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  emptyCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  emptyTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: theme.spacing.sm,
-  },
-  emptyDescription: {
-    color: theme.colors.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  listContent: {
-    gap: theme.spacing.md,
-    paddingBottom: theme.spacing.xl,
-  },
-  historyCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  historyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  historyTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: theme.spacing.xs,
-  },
-  historyDate: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-  },
-  totalBadge: {
-    backgroundColor: theme.colors.background,
-    borderRadius: 999,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    alignSelf: 'flex-start',
-  },
-  totalBadgeText: {
-    color: theme.colors.primary,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-  },
-  summaryItem: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  summaryValue: {
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: theme.spacing.xs,
-  },
-  summaryLabel: {
-    color: theme.colors.textMuted,
-    fontSize: 12,
-  },
-  idealText: {
-    color: theme.colors.success,
-  },
-  warningText: {
-    color: theme.colors.warning,
-  },
-  criticalText: {
-    color: theme.colors.danger,
-  },
-  sensorList: {
-    gap: theme.spacing.sm,
-  },
-  sensorRow: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: theme.spacing.md,
-  },
-  sensorInfo: {
-    flex: 1,
-  },
-  sensorName: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: theme.spacing.xs,
-  },
-  sensorStatus: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  sensorValue: {
-    color: theme.colors.primary,
-    fontSize: 16,
-    fontWeight: '900',
-  },
-});
