@@ -5,7 +5,9 @@ interface LoadingScreenProps {
   message?: string;
 }
 
-export function LoadingScreen({ message = 'Carregando dados...' }: LoadingScreenProps) {
+export function LoadingScreen({
+  message = 'Carregando dados...',
+}: LoadingScreenProps) {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={theme.colors.primary} />
