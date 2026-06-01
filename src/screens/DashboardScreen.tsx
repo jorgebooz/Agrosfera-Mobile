@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useScreenLoading } from '../hooks/useScreenLoading';
+import { getAPOD } from '../services/nasaService';
 import { generateSimulatedSensors } from '../services/sensorService';
 import { getCurrentWeather } from '../services/weatherService';
 import { lightTheme } from '../theme';
+import { APODData } from '../types/nasa';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { WeatherData } from '../types/weather';
 import { getStatusLabel } from '../utils/status';
@@ -14,6 +16,8 @@ export function DashboardScreen() {
   const [sensors, setSensors] = useState<SensorData[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [apod, setApod] = useState<APODData | null>(null);
+  const [apodError, setApodError] = useState<string | null>(null);
 
   const isLoading = useScreenLoading();
 
@@ -39,6 +43,20 @@ export function DashboardScreen() {
     }
 
     loadWeather();
+  }, []);
+
+  useEffect(() => {
+    async function loadAPOD() {
+      try {
+        setApodError(null);
+        const data = await getAPOD();
+        setApod(data);
+      } catch {
+        setApodError('Não foi possível carregar a inspiração espacial agora.');
+      }
+    }
+
+    loadAPOD();
   }, []);
 
   const summary = useMemo(() => {
@@ -103,7 +121,7 @@ export function DashboardScreen() {
         </View>
 
         {weatherError ? (
-          <Text style={styles.weatherError}>{weatherError}</Text>
+          <Text style={styles.errorText}>{weatherError}</Text>
         ) : (
           <>
             <Text style={styles.weatherDescription}>
@@ -181,6 +199,36 @@ export function DashboardScreen() {
         ))}
       </View>
 
+      <View style={styles.apodCard}>
+        <Text style={styles.apodKicker}>NASA APOD</Text>
+        <Text style={styles.apodTitle}>Inspiração espacial do dia</Text>
+
+        {apodError ? (
+          <Text style={styles.errorText}>{apodError}</Text>
+        ) : (
+          <>
+            {apod?.mediaType === 'image' ? (
+              <Image source={{ uri: apod.url }} style={styles.apodImage} />
+            ) : (
+              <View style={styles.apodFallback}>
+                <Text style={styles.apodFallbackText}>
+                  Conteúdo espacial disponível, mas o formato de hoje não é uma imagem.
+                </Text>
+              </View>
+            )}
+
+            <Text style={styles.apodName}>{apod?.title || 'Carregando título'}</Text>
+            <Text style={styles.apodDate}>{apod?.date || '--'}</Text>
+            <Text style={styles.apodDescription}>
+              {shortenText(
+                apod?.explanation ||
+                  'Aguardando descrição da imagem astronômica do dia.'
+              )}
+            </Text>
+          </>
+        )}
+      </View>
+
       <View style={styles.spaceCard}>
         <Text style={styles.spaceTitle}>Conexão espacial</Text>
         <Text style={styles.spaceText}>
@@ -194,6 +242,14 @@ export function DashboardScreen() {
 }
 
 const theme = lightTheme;
+
+function shortenText(text: string, limit = 220): string {
+  if (text.length <= limit) {
+    return text;
+  }
+
+  return `${text.slice(0, limit).trim()}...`;
+}
 
 function getStatusDescription(status: SensorStatus): string {
   switch (status) {
@@ -327,11 +383,6 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
     marginBottom: theme.spacing.md,
   },
-  weatherError: {
-    color: theme.colors.danger,
-    fontSize: 14,
-    lineHeight: 20,
-  },
   weatherDetails: {
     flexDirection: 'row',
     gap: theme.spacing.sm,
@@ -425,6 +476,65 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+  apodCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: theme.spacing.lg,
+  },
+  apodKicker: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: theme.spacing.xs,
+  },
+  apodTitle: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: theme.spacing.md,
+  },
+  apodImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: theme.radius.md,
+    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+  },
+  apodFallback: {
+    minHeight: 120,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  apodFallbackText: {
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  apodName: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: theme.spacing.xs,
+  },
+  apodDate: {
+    color: theme.colors.textMuted,
+    fontSize: 12,
+    marginBottom: theme.spacing.sm,
+  },
+  apodDescription: {
+    color: theme.colors.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   spaceCard: {
     backgroundColor: theme.colors.tertiary,
     borderRadius: theme.radius.lg,
@@ -440,5 +550,10 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     lineHeight: 22,
+  },
+  errorText: {
+    color: theme.colors.danger,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
