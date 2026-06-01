@@ -1,16 +1,25 @@
 import { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
+import { LoadingScreen } from '../components/LoadingScreen';
+import { useScreenLoading } from '../hooks/useScreenLoading';
 import { generateSimulatedSensors } from '../services/sensorService';
+import { saveSensorHistoryRecord } from '../storage/historyStorage';
 import { lightTheme } from '../theme';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
 
-import { LoadingScreen } from '../components/LoadingScreen';
-import { useScreenLoading } from '../hooks/useScreenLoading';
-
 export function MonitoringScreen() {
   const [sensors, setSensors] = useState<SensorData[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
   const isLoading = useScreenLoading();
 
   useEffect(() => {
@@ -23,6 +32,30 @@ export function MonitoringScreen() {
     return () => clearInterval(interval);
   }, []);
 
+  async function handleSaveHistory() {
+    try {
+      setIsSaving(true);
+
+      await saveSensorHistoryRecord({
+        id: `history-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        sensors,
+      });
+
+      Alert.alert(
+        'Leitura salva',
+        'Os dados atuais dos sensores foram salvos no histórico local.'
+      );
+    } catch {
+      Alert.alert(
+        'Erro ao salvar',
+        'Não foi possível salvar a leitura no histórico.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   if (isLoading) {
     return <LoadingScreen message="Atualizando sensores do cultivo..." />;
   }
@@ -34,16 +67,30 @@ export function MonitoringScreen() {
         Sensores simulados atualizados automaticamente.
       </Text>
 
+      <Pressable
+        style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+        onPress={handleSaveHistory}
+        disabled={isSaving || sensors.length === 0}
+      >
+        <Text style={styles.saveButtonText}>
+          {isSaving ? 'Salvando...' : 'Salvar leitura no histórico'}
+        </Text>
+      </Pressable>
+
       <FlatList
         data={sensors}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.sensorName}>{item.name}</Text>
+
               <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
-                <Text style={styles.statusText}>{getStatusLabel(item.status)}</Text>
+                <Text style={styles.statusText}>
+                  {getStatusLabel(item.status)}
+                </Text>
               </View>
             </View>
 
@@ -90,7 +137,23 @@ const styles = StyleSheet.create({
   subtitle: {
     color: theme.colors.textMuted,
     fontSize: 16,
+    marginBottom: theme.spacing.md,
+  },
+  saveButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.radius.md,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    alignItems: 'center',
     marginBottom: theme.spacing.lg,
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
   },
   listContent: {
     gap: theme.spacing.md,
