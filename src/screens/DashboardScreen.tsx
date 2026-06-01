@@ -66,12 +66,8 @@ export function DashboardScreen() {
   const summary = useMemo(() => {
     const total = sensors.length;
     const ideal = sensors.filter((sensor) => sensor.status === 'ideal').length;
-    const attention = sensors.filter(
-      (sensor) => sensor.status === 'attention'
-    ).length;
-    const critical = sensors.filter(
-      (sensor) => sensor.status === 'critical'
-    ).length;
+    const attention = sensors.filter((sensor) => sensor.status === 'attention').length;
+    const critical = sensors.filter((sensor) => sensor.status === 'critical').length;
 
     let generalStatus: SensorStatus = 'ideal';
 
@@ -147,9 +143,7 @@ export function DashboardScreen() {
 
       <View style={[styles.statusCard, getStatusCardStyle(summary.generalStatus)]}>
         <Text style={styles.statusLabel}>Status geral</Text>
-        <Text style={styles.statusTitle}>
-          {getStatusLabel(summary.generalStatus)}
-        </Text>
+        <Text style={styles.statusTitle}>{getStatusLabel(summary.generalStatus)}</Text>
         <Text style={styles.statusDescription}>
           {getStatusDescription(summary.generalStatus)}
         </Text>
@@ -266,9 +260,7 @@ export function DashboardScreen() {
               </View>
             )}
 
-            <Text style={styles.apodName}>
-              {apod?.title || 'Carregando título'}
-            </Text>
+            <Text style={styles.apodName}>{apod?.title || 'Carregando título'}</Text>
             <Text style={styles.apodDate}>{apod?.date || '--'}</Text>
             <Text style={styles.apodDescription}>
               {shortenText(
