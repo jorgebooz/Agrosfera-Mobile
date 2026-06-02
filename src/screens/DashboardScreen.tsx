@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useAppTheme } from '../contexts/ThemeContext';
@@ -7,6 +8,7 @@ import { useScreenLoading } from '../hooks/useScreenLoading';
 import { getAPOD } from '../services/nasaService';
 import { generateSimulatedSensors } from '../services/sensorService';
 import { getCurrentWeather } from '../services/weatherService';
+import { getStoredDefaultCity } from '../storage/preferencesStorage';
 import { AppTheme } from '../theme';
 import { APODData } from '../types/nasa';
 import { SensorData, SensorStatus } from '../types/sensor';
@@ -35,19 +37,24 @@ export function DashboardScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    async function loadWeather() {
-      try {
-        setWeatherError(null);
-        const data = await getCurrentWeather();
-        setWeather(data);
-      } catch {
-        setWeatherError('Não foi possível carregar os dados climáticos agora.');
-      }
-    }
+  const loadWeather = useCallback(async () => {
+    try {
+      setWeatherError(null);
 
-    loadWeather();
+      const storedCity = await getStoredDefaultCity();
+      const data = await getCurrentWeather(storedCity);
+
+      setWeather(data);
+    } catch {
+      setWeatherError('Não foi possível carregar os dados climáticos agora.');
+    }
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadWeather();
+    }, [loadWeather])
+  );
 
   useEffect(() => {
     async function loadAPOD() {

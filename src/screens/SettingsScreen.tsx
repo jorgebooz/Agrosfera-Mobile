@@ -12,10 +12,12 @@ import {
 import { LoadingScreen } from '../components/LoadingScreen';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
+import { clearSensorHistory } from '../storage/historyStorage';
 import {
   getStoredDefaultCity,
   saveStoredDefaultCity,
 } from '../storage/preferencesStorage';
+import { AppTheme } from '../theme';
 
 export function SettingsScreen() {
   const { theme, isDarkMode, toggleTheme } = useAppTheme();
@@ -24,7 +26,6 @@ export function SettingsScreen() {
   const [isSavingCity, setIsSavingCity] = useState(false);
 
   const isLoading = useScreenLoading();
-
   const styles = createStyles(theme);
 
   useEffect(() => {
@@ -48,10 +49,10 @@ export function SettingsScreen() {
       setIsSavingCity(true);
       await saveStoredDefaultCity(formattedCity);
 
-    Alert.alert(
-      'Cidade salva',
-      'A cidade padrão foi atualizada com sucesso.'
-    );
+      Alert.alert(
+        'Cidade salva',
+        'A cidade padrão foi atualizada com sucesso.'
+      );
     } catch {
       Alert.alert(
         'Erro ao salvar',
@@ -62,6 +63,38 @@ export function SettingsScreen() {
     }
   }
 
+  function handleClearHistory() {
+    Alert.alert(
+      'Limpar histórico',
+      'Tem certeza que deseja apagar todas as leituras salvas?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Limpar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearSensorHistory();
+
+              Alert.alert(
+                'Histórico limpo',
+                'As leituras salvas foram apagadas com sucesso.'
+              );
+            } catch {
+              Alert.alert(
+                'Erro ao limpar',
+                'Não foi possível apagar o histórico agora.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  }
+
   if (isLoading) {
     return <LoadingScreen message="Carregando preferências..." />;
   }
@@ -70,7 +103,7 @@ export function SettingsScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Configurações</Text>
       <Text style={styles.subtitle}>
-        Personalize preferências locais do Agrosfera Mobile.
+        Personalize sua experiência no Agrosfera Mobile.
       </Text>
 
       <View style={styles.card}>
@@ -78,7 +111,7 @@ export function SettingsScreen() {
           <View style={styles.rowText}>
             <Text style={styles.cardTitle}>Modo escuro</Text>
             <Text style={styles.cardDescription}>
-              Alterna a navegação e as telas preparadas para dark/light mode.
+              Ajuste a aparência do app para uma visualização mais confortável.
             </Text>
           </View>
 
@@ -97,8 +130,8 @@ export function SettingsScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Cidade padrão</Text>
         <Text style={styles.cardDescription}>
-          Essa cidade será usada como referência para os dados climáticos da
-          OpenWeather.
+          Escolha a cidade usada como referência para os dados climáticos do
+          cultivo.
         </Text>
 
         <TextInput
@@ -121,6 +154,18 @@ export function SettingsScreen() {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.cardTitle}>Histórico de leituras</Text>
+        <Text style={styles.cardDescription}>
+          Apague as leituras salvas caso queira começar um novo acompanhamento
+          do cultivo.
+        </Text>
+
+        <Pressable style={styles.dangerButton} onPress={handleClearHistory}>
+          <Text style={styles.dangerButtonText}>Limpar histórico</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>Sobre o app</Text>
         <Text style={styles.cardDescription}>
           O Agrosfera Mobile monitora um ambiente de cultivo controlado usando
@@ -132,16 +177,16 @@ export function SettingsScreen() {
           <Text style={styles.techItem}>React Native</Text>
           <Text style={styles.techItem}>Expo SDK 55</Text>
           <Text style={styles.techItem}>TypeScript</Text>
-          <Text style={styles.techItem}>OpenWeather API</Text>
+          <Text style={styles.techItem}>OpenWeather</Text>
           <Text style={styles.techItem}>NASA APOD</Text>
-          <Text style={styles.techItem}>AsyncStorage</Text>
+          <Text style={styles.techItem}>Histórico de leituras</Text>
         </View>
       </View>
     </View>
   );
 }
 
-function createStyles(theme: ReturnType<typeof useAppTheme>['theme']) {
+function createStyles(theme: AppTheme) {
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -214,6 +259,21 @@ function createStyles(theme: ReturnType<typeof useAppTheme>['theme']) {
       color: '#FFFFFF',
       fontSize: 15,
       fontWeight: '800',
+    },
+    dangerButton: {
+      backgroundColor: '#D94F30',
+      borderRadius: theme.radius.md,
+      paddingVertical: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#F26A1B',
+    },
+    dangerButtonText: {
+      color: '#FFFFFF',
+      fontSize: 15,
+      fontWeight: '900',
+      letterSpacing: 0.2,
     },
     techList: {
       flexDirection: 'row',

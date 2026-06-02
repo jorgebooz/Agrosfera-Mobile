@@ -4,15 +4,29 @@ import { OpenWeatherResponse, WeatherData } from '../types/weather';
 const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5/weather';
 
 function getApiKey() {
-  return process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY;
+  return process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY?.trim();
 }
 
 function getDefaultCity() {
-  return process.env.EXPO_PUBLIC_DEFAULT_CITY || 'Sao Paulo';
+  return process.env.EXPO_PUBLIC_DEFAULT_CITY || 'Sao Paulo,BR';
 }
 
 function hasValidApiKey(apiKey?: string) {
-  return Boolean(apiKey && apiKey !== 'SUA_CHAVE_AQUI');
+  if (!apiKey) {
+    return false;
+  }
+
+  const normalizedApiKey = apiKey.trim();
+
+  const invalidValues = [
+    '',
+    'SUA_CHAVE_AQUI',
+    'SUA_CHAVE_OPENWEATHER_AQUI',
+    'SUA_KEY_COPIADA_AQUI',
+    'SUA_CHAVE_OPENWEATHER_AQUI_SEM_ASPAS',
+  ];
+
+  return !invalidValues.includes(normalizedApiKey);
 }
 
 function normalizeWeatherData(data: OpenWeatherResponse): WeatherData {
@@ -28,16 +42,17 @@ function normalizeWeatherData(data: OpenWeatherResponse): WeatherData {
   };
 }
 
-export async function getCurrentWeather(city = getDefaultCity()): Promise<WeatherData> {
+export async function getCurrentWeather(city?: string): Promise<WeatherData> {
   const apiKey = getApiKey();
+  const selectedCity = city?.trim() || getDefaultCity();
 
   if (!hasValidApiKey(apiKey)) {
-    return getMockWeather(city);
+    return getMockWeather(selectedCity);
   }
 
   const response = await axios.get<OpenWeatherResponse>(OPENWEATHER_BASE_URL, {
     params: {
-      q: city,
+      q: selectedCity,
       appid: apiKey,
       units: 'metric',
       lang: 'pt_br',
