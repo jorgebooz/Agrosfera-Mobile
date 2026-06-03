@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 
 import { LoadingScreen } from './src/components/LoadingScreen';
-import { ThemeProvider } from './src/contexts/ThemeContext';
+import { ThemeProvider, useAppTheme } from './src/contexts/ThemeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 
-export default function App() {
+function AppContent() {
+  const { isDarkMode } = useAppTheme();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -21,9 +22,17 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
+    <>
       <AppNavigator />
-      <StatusBar style="auto" />
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
     </ThemeProvider>
   );
 }
