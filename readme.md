@@ -450,3 +450,7 @@ Ou escaneie o QR Code com o aplicativo Expo Go.
 ## 📄 Licença
 
 Projeto acadêmico desenvolvido para a **FIAP — Global Solution 2025**.
+
+---
+
+[GitHub](https://github.com/jorgebooz/Agrosfera-Mobile)
