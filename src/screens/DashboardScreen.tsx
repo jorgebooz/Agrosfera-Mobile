@@ -16,6 +16,7 @@ import { APODData } from '../types/nasa';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { WeatherData } from '../types/weather';
 import { getStatusLabel } from '../utils/status';
+import { CultivationAnalytics } from '../components/CultivationAnalytics';
 
 export function DashboardScreen() {
   const { theme } = useAppTheme();
@@ -164,6 +165,10 @@ export function DashboardScreen() {
             {getStatusDescription(summary.generalStatus)}
           </Text>
         </View>
+      </FadeInView>
+
+      <FadeInView delay={100}>
+          <CultivationAnalytics sensors={sensors} />
       </FadeInView>
 
       <FadeInView delay={140}>
