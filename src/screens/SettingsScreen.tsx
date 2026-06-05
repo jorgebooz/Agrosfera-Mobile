@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Alert,
-  ScrollView,
+  Platform,
   StyleSheet,
   Switch,
   Text,
@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 
 import { AnimatedPressable } from '../components/AnimatedPressable';
-import { FadeInView } from '../components/FadeInView';
-import { ListSkeleton } from '../components/ListSkeleton';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import { clearSensorHistory } from '../storage/historyStorage';
@@ -26,6 +25,7 @@ export function SettingsScreen() {
 
   const [city, setCity] = useState('');
   const [isSavingCity, setIsSavingCity] = useState(false);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
 
   const isLoading = useScreenLoading();
   const styles = createStyles(theme);
@@ -65,7 +65,38 @@ export function SettingsScreen() {
     }
   }
 
+  async function clearHistory() {
+    try {
+      setIsClearingHistory(true);
+      await clearSensorHistory();
+
+      Alert.alert(
+        'Histórico limpo',
+        'As leituras salvas foram apagadas com sucesso.'
+      );
+    } catch {
+      Alert.alert(
+        'Erro ao limpar',
+        'Não foi possível apagar o histórico agora.'
+      );
+    } finally {
+      setIsClearingHistory(false);
+    }
+  }
+
   function handleClearHistory() {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        'Tem certeza que deseja apagar todas as leituras salvas?'
+      );
+
+      if (confirmed) {
+        clearHistory();
+      }
+
+      return;
+    }
+
     Alert.alert(
       'Limpar histórico',
       'Tem certeza que deseja apagar todas as leituras salvas?',
@@ -77,135 +108,109 @@ export function SettingsScreen() {
         {
           text: 'Limpar',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await clearSensorHistory();
-
-              Alert.alert(
-                'Histórico limpo',
-                'As leituras salvas foram apagadas com sucesso.'
-              );
-            } catch {
-              Alert.alert(
-                'Erro ao limpar',
-                'Não foi possível apagar o histórico agora.'
-              );
-            }
-          },
+          onPress: clearHistory,
         },
       ]
     );
   }
 
   if (isLoading) {
-    return (
-      <ListSkeleton
-        titleWidth="62%"
-        subtitleWidth="88%"
-        showButton
-        items={4}
-      />
-    );
+    return <LoadingScreen message="Carregando preferências..." />;
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <FadeInView delay={80}>
-        <Text style={styles.title}>Configurações</Text>
-        <Text style={styles.subtitle}>
-          Personalize sua experiência no Agrosfera Mobile.
-        </Text>
-      </FadeInView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Configurações</Text>
+      <Text style={styles.subtitle}>
+        Personalize sua experiência no Agrosfera Mobile.
+      </Text>
 
-      <FadeInView delay={140}>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.cardTitle}>Modo escuro</Text>
-              <Text style={styles.cardDescription}>
-                Ajuste a aparência do app para uma visualização mais confortável.
-              </Text>
-            </View>
-
-            <Switch
-              value={isDarkMode}
-              onValueChange={toggleTheme}
-              thumbColor="#FFFFFF"
-              trackColor={{
-                false: theme.colors.border,
-                true: theme.colors.primary,
-              }}
-            />
-          </View>
-        </View>
-      </FadeInView>
-
-      <FadeInView delay={200}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Cidade padrão</Text>
-          <Text style={styles.cardDescription}>
-            Escolha a cidade usada como referência para os dados climáticos do
-            cultivo.
-          </Text>
-
-          <TextInput
-            value={city}
-            onChangeText={setCity}
-            placeholder="Ex: Sao Paulo,BR"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
-            autoCapitalize="words"
-          />
-
-          <AnimatedPressable
-            style={[styles.primaryButton, isSavingCity && styles.disabledButton]}
-            onPress={handleSaveCity}
-            disabled={isSavingCity}
-          >
-            <Text style={styles.primaryButtonText}>
-              {isSavingCity ? 'Salvando...' : 'Salvar cidade padrão'}
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <View style={styles.rowText}>
+            <Text style={styles.cardTitle}>Modo escuro</Text>
+            <Text style={styles.cardDescription}>
+              Ajuste a aparência do app para uma visualização mais confortável.
             </Text>
-          </AnimatedPressable>
-        </View>
-      </FadeInView>
-
-      <FadeInView delay={260}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Histórico de leituras</Text>
-          <Text style={styles.cardDescription}>
-            Apague as leituras salvas caso queira começar um novo acompanhamento
-            do cultivo.
-          </Text>
-
-          <AnimatedPressable
-            style={styles.dangerButton}
-            onPress={handleClearHistory}
-          >
-            <Text style={styles.dangerButtonText}>Limpar histórico</Text>
-          </AnimatedPressable>
-        </View>
-      </FadeInView>
-
-      <FadeInView delay={320}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Sobre o app</Text>
-          <Text style={styles.cardDescription}>
-            O Agrosfera Mobile monitora um ambiente de cultivo controlado usando
-            dados climáticos, sensores inteligentes, histórico de leituras e
-            conexão com a indústria espacial.
-          </Text>
-
-          <View style={styles.techList}>
-            <Text style={styles.techItem}>React Native</Text>
-            <Text style={styles.techItem}>Expo SDK 55</Text>
-            <Text style={styles.techItem}>TypeScript</Text>
-            <Text style={styles.techItem}>OpenWeather</Text>
-            <Text style={styles.techItem}>NASA APOD</Text>
-            <Text style={styles.techItem}>Histórico de leituras</Text>
           </View>
+
+          <Switch
+            value={isDarkMode}
+            onValueChange={toggleTheme}
+            thumbColor="#FFFFFF"
+            trackColor={{
+              false: theme.colors.border,
+              true: theme.colors.primary,
+            }}
+          />
         </View>
-      </FadeInView>
-    </ScrollView>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Cidade padrão</Text>
+        <Text style={styles.cardDescription}>
+          Escolha a cidade usada como referência para os dados climáticos do
+          cultivo.
+        </Text>
+
+        <TextInput
+          value={city}
+          onChangeText={setCity}
+          placeholder="Ex: Sao Paulo,BR"
+          placeholderTextColor={theme.colors.textMuted}
+          style={styles.input}
+        />
+
+        <AnimatedPressable
+          style={[styles.primaryButton, isSavingCity && styles.disabledButton]}
+          onPress={handleSaveCity}
+          disabled={isSavingCity}
+        >
+          <Text style={styles.primaryButtonText}>
+            {isSavingCity ? 'Salvando...' : 'Salvar cidade padrão'}
+          </Text>
+        </AnimatedPressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Histórico de leituras</Text>
+        <Text style={styles.cardDescription}>
+          Apague as leituras salvas caso queira começar um novo acompanhamento
+          do cultivo.
+        </Text>
+
+        <AnimatedPressable
+          style={[
+            styles.dangerButton,
+            isClearingHistory && styles.disabledButton,
+          ]}
+          onPress={handleClearHistory}
+          disabled={isClearingHistory}
+        >
+          <Text style={styles.dangerButtonText}>
+            {isClearingHistory ? 'Limpando...' : 'Limpar histórico'}
+          </Text>
+        </AnimatedPressable>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Sobre o app</Text>
+        <Text style={styles.cardDescription}>
+          O Agrosfera Mobile monitora um ambiente de cultivo controlado usando
+          dados climáticos, sensores inteligentes, histórico de leituras e
+          conexão com a indústria espacial.
+        </Text>
+
+        <View style={styles.techList}>
+          <Text style={styles.techItem}>React Native</Text>
+          <Text style={styles.techItem}>Expo SDK 55</Text>
+          <Text style={styles.techItem}>TypeScript</Text>
+          <Text style={styles.techItem}>OpenWeather</Text>
+          <Text style={styles.techItem}>NASA APOD</Text>
+          <Text style={styles.techItem}>Histórico de leituras</Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -214,10 +219,7 @@ function createStyles(theme: AppTheme) {
     container: {
       flex: 1,
       backgroundColor: theme.colors.background,
-    },
-    content: {
       padding: theme.spacing.lg,
-      paddingBottom: theme.spacing.xl,
     },
     title: {
       color: theme.colors.primary,
@@ -278,9 +280,6 @@ function createStyles(theme: AppTheme) {
       paddingHorizontal: theme.spacing.lg,
       alignItems: 'center',
     },
-    disabledButton: {
-      opacity: 0.6,
-    },
     primaryButtonText: {
       color: '#FFFFFF',
       fontSize: 15,
@@ -300,6 +299,9 @@ function createStyles(theme: AppTheme) {
       fontSize: 15,
       fontWeight: '900',
       letterSpacing: 0.2,
+    },
+    disabledButton: {
+      opacity: 0.6,
     },
     techList: {
       flexDirection: 'row',
