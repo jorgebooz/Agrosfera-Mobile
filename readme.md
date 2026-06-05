@@ -26,7 +26,7 @@ Diante desse cenário, surge a necessidade de uma solução mobile capaz de acom
 
 O **Agrosfera Mobile** é um aplicativo desenvolvido em **React Native com Expo SDK 55 e TypeScript**, voltado ao monitoramento inteligente de ambientes de cultivo controlado.
 
-A solução combina dados climáticos reais, sensores inteligentes simulados, histórico de leituras, alertas de risco e uma conexão conceitual com a indústria espacial por meio da NASA APOD.
+A solução combina dados climáticos reais, sensores inteligentes simulados, histórico de leituras, alertas de risco, dashboard analítico e uma conexão conceitual com a indústria espacial por meio da NASA APOD.
 
 O app foi pensado para demonstrar como tecnologias inspiradas por ambientes extremos podem gerar impacto positivo na Terra, apoiando uma agricultura mais sustentável, eficiente e orientada por dados.
 
@@ -60,21 +60,25 @@ A proposta segue a lógica de que quanto mais difícil o ambiente, mais eficient
 * Permitir personalização com modo claro e escuro
 * Exibir conteúdo espacial diário com NASA APOD
 * Criar uma experiência moderna, funcional e responsiva
+* Exibir indicadores analíticos sobre a saúde do cultivo
 * Demonstrar boas práticas de arquitetura mobile
 
 ---
 
 ## 🧭 Sistema de Navegação
 
-O Agrosfera Mobile utiliza navegação por abas com **Bottom Tab Navigator**, permitindo acesso rápido às principais áreas do app:
+O Agrosfera Mobile utiliza uma navegação híbrida com **Native Stack Navigator** e **Bottom Tab Navigator**.
 
-| Aba              | Função                                                      |
-| ---------------- | ----------------------------------------------------------- |
-| 🏠 Dashboard     | Visão geral do cultivo, clima externo, sensores e NASA APOD |
-| 📊 Monitoramento | Lista de sensores inteligentes simulados                    |
-| ⚠️ Alertas       | Recomendações geradas com base nos sensores                 |
-| 🕘 Histórico     | Leituras salvas para acompanhamento posterior               |
-| ⚙️ Configurações | Tema, cidade padrão, histórico e informações do app         |
+A estrutura principal utiliza Stack Navigation para organizar a aplicação e Bottom Tabs para permitir acesso rápido às áreas principais do app.
+
+| Aba              | Função                                                                         |
+| ---------------- | ------------------------------------------------------------------------------ |
+| 🏠 Home          | Visão operacional com status geral, clima externo, sensores ativos e NASA APOD |
+| 📊 Dashboard     | Análise do cultivo com indicadores calculados e gráfico dos sensores           |
+| 📡 Monitoramento | Lista de sensores inteligentes simulados                                       |
+| ⚠️ Alertas       | Recomendações geradas com base nos sensores                                    |
+| 🕘 Histórico     | Leituras salvas para acompanhamento posterior                                  |
+| ⚙️ Configurações | Tema, cidade padrão, histórico e informações do app                            |
 
 ---
 
@@ -86,13 +90,16 @@ O Agrosfera Mobile utiliza navegação por abas com **Bottom Tab Navigator**, pe
 | Expo SDK 55      | Ambiente de desenvolvimento e execução            |
 | TypeScript       | Tipagem estática e segurança no código            |
 | React Navigation | Navegação entre telas                             |
+| Native Stack     | Estrutura de navegação principal                  |
 | Bottom Tabs      | Navegação principal por abas                      |
 | Axios            | Consumo de APIs externas                          |
 | AsyncStorage     | Armazenamento interno de preferências e histórico |
 | Context API      | Controle global de tema                           |
+| Custom Hooks     | Reutilização de lógicas de carregamento e tela    |
 | OpenWeather API  | Dados climáticos reais                            |
 | NASA APOD API    | Conteúdo espacial diário                          |
 | Ionicons         | Ícones da navegação                               |
+| Animated API     | Animações suaves e microinterações                |
 
 ---
 
@@ -103,7 +110,14 @@ AgrosferaMobile/
 ├── src/
 │   ├── assets/
 │   ├── components/
-│   │   └── LoadingScreen.tsx
+│   │   ├── AnimatedPressable.tsx
+│   │   ├── CultivationAnalytics.tsx
+│   │   ├── DashboardSkeleton.tsx
+│   │   ├── FadeInView.tsx
+│   │   ├── ListSkeleton.tsx
+│   │   ├── LoadingScreen.tsx
+│   │   ├── SensorStatusChart.tsx
+│   │   └── SkeletonBox.tsx
 │   ├── contexts/
 │   │   └── ThemeContext.tsx
 │   ├── hooks/
@@ -111,6 +125,7 @@ AgrosferaMobile/
 │   ├── navigation/
 │   │   └── AppNavigator.tsx
 │   ├── screens/
+│   │   ├── HomeScreen.tsx
 │   │   ├── DashboardScreen.tsx
 │   │   ├── MonitoringScreen.tsx
 │   │   ├── AlertsScreen.tsx
@@ -137,6 +152,8 @@ AgrosferaMobile/
 │   │   └── weather.ts
 │   └── utils/
 │       └── status.ts
+├── assets/
+│   └── screenshots/
 ├── App.tsx
 ├── package.json
 ├── tsconfig.json
@@ -147,15 +164,29 @@ AgrosferaMobile/
 
 ## 🎯 Funcionalidades Implementadas
 
-### ✅ Dashboard
+### ✅ Home
 
 * Status geral do cultivo
-* Cards com resumo dos sensores
+* Cards com resumo dos sensores ativos
 * Dados climáticos reais da cidade padrão
 * Temperatura, umidade, sensação térmica e vento
 * Indicadores principais do ambiente
 * Card com inspiração espacial diária usando NASA APOD
-* Loading de carregamento ao abrir a tela
+* Skeleton loading ao abrir a tela
+* Animações suaves de entrada dos blocos
+
+---
+
+### ✅ Dashboard
+
+* Status geral do cultivo
+* Dashboard analítico com indicadores calculados
+* Índice de saúde do cultivo
+* Risco operacional
+* Eficiência hídrica
+* Gráfico de barras com distribuição dos sensores por status
+* Indicadores visuais para sensores ideais, em atenção e críticos
+* Animações suaves nos cards e no gráfico
 
 ---
 
@@ -171,6 +202,8 @@ AgrosferaMobile/
   * Crítico
 * Botão para salvar leitura no histórico
 * Interface em cards modernos e responsivos
+* Skeleton loading de lista
+* Feedback visual ao pressionar botões
 
 ---
 
@@ -181,6 +214,8 @@ AgrosferaMobile/
 * Classificação por severidade
 * Resumo de alertas ativos
 * Estado vazio quando não há problemas detectados
+* Skeleton loading de lista
+* Animações suaves nos cards
 * Linguagem voltada para usuário comum
 
 ---
@@ -193,6 +228,9 @@ AgrosferaMobile/
 * Listagem detalhada dos sensores salvos
 * Opção para limpar histórico
 * Dados mantidos mesmo após fechar o app
+* Skeleton loading de lista
+* Animações suaves nos registros
+* Feedback visual no botão de limpeza
 
 ---
 
@@ -204,6 +242,7 @@ AgrosferaMobile/
 * Limpeza do histórico de leituras
 * Informações sobre o app
 * Comunicação amigável, sem expor termos técnicos ao usuário final
+* Feedback visual em ações importantes
 
 ---
 
@@ -235,6 +274,23 @@ Dados exibidos:
 
 ---
 
+## 📊 Dashboard Analítico
+
+O app possui uma área de análise dedicada para transformar os dados dos sensores em indicadores úteis para tomada de decisão.
+
+Indicadores calculados:
+
+| Indicador            | Descrição                                                              |
+| -------------------- | ---------------------------------------------------------------------- |
+| Saúde do cultivo     | Percentual baseado na quantidade de sensores em estado ideal           |
+| Risco operacional    | Classificação baseada na existência de sensores em atenção ou críticos |
+| Eficiência hídrica   | Avaliação do consumo de água do ambiente de cultivo                    |
+| Gráfico dos sensores | Distribuição visual entre Ideal, Atenção e Crítico                     |
+
+Essa área reforça a proposta de monitoramento inteligente e aproxima o app de uma solução analítica voltada à agricultura sustentável.
+
+---
+
 ## 🏗️ Arquitetura Técnica
 
 O projeto foi organizado com separação clara de responsabilidades:
@@ -253,6 +309,27 @@ Essa organização facilita manutenção, leitura do código e evolução do pro
 
 ---
 
+## 🧠 Conceitos Aplicados
+
+| Conceito         | Aplicação no projeto                                              |
+| ---------------- | ----------------------------------------------------------------- |
+| Componentes      | Cards, skeletons, gráfico, botões animados e blocos reutilizáveis |
+| Props            | Componentes recebem dados e configurações de exibição             |
+| State            | Controle de sensores, clima, APOD, histórico, tema e preferências |
+| Hooks            | Uso de hooks nativos e hooks customizados                         |
+| FlatList         | Listagens de sensores, alertas e histórico                        |
+| ScrollView       | Telas com conteúdo analítico e operacional                        |
+| TypeScript       | Tipagem forte em dados, navegação e serviços                      |
+| Interfaces       | Modelagem de sensores, clima, alertas, NASA e histórico           |
+| Types            | Status, tipos de sensores, tema e navegação                       |
+| Generics         | Uso em states, Axios e navegação tipada                           |
+| Service Layer    | Separação das integrações e regras de dados                       |
+| AsyncStorage     | Histórico, tema e cidade padrão                                   |
+| Context API      | Tema global                                                       |
+| React Navigation | Stack Navigation e Tab Navigation tipadas                         |
+
+---
+
 ## 🎨 UX/UI
 
 A interface do Agrosfera Mobile foi criada com foco em clareza, contraste e leitura rápida dos dados.
@@ -265,7 +342,12 @@ A identidade visual utiliza:
 * **Tons claros e escuros** para suporte ao modo claro e escuro
 * **Cards arredondados** para organizar informações
 * **Badges de status** para leitura rápida
-* **Loading states** para simular carregamento de dados
+* **Skeleton loading** nas telas principais
+* **Gráfico de barras** para status dos sensores
+* **Animações suaves** com fade-in e pulso visual
+* **Microinterações** em botões e controles
+* **Feedback visual** em ações, estados e alertas
+* **Dark/light mode** aplicado globalmente
 
 A comunicação do app foi pensada para usuários comuns, evitando termos técnicos na interface.
 
@@ -273,15 +355,17 @@ A comunicação do app foi pensada para usuários comuns, evitando termos técni
 
 ## 📸 Screenshots
 
-> Adicione aqui os prints das telas do app.
+| Home                                   | Dashboard                                        | Monitoramento                                            |
+| -------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| ![Home](./assets/screenshots/home.png) | ![Dashboard](./assets/screenshots/dashboard.png) | ![Monitoramento](./assets/screenshots/monitoramento.png) |
 
-| Dashboard                                        | Monitoramento                                            | Alertas                                      |
-| ------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------- |
-| ![Dashboard](./assets/screenshots/dashboard.png) | ![Monitoramento](./assets/screenshots/monitoramento.png) | ![Alertas](./assets/screenshots/alertas.png) |
+| Alertas                                      | Histórico                                        | Configurações                                            |
+| -------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- |
+| ![Alertas](./assets/screenshots/alertas.png) | ![Histórico](./assets/screenshots/historico.png) | ![Configurações](./assets/screenshots/configuracoes.png) |
 
-| Histórico                                        | Configurações                                            | Modo Escuro                                          |
-| ------------------------------------------------ | -------------------------------------------------------- | ---------------------------------------------------- |
-| ![Histórico](./assets/screenshots/historico.png) | ![Configurações](./assets/screenshots/configuracoes.png) | ![Modo Escuro](./assets/screenshots/modo-escuro.png) |
+| Modo Escuro                                          | Web                                  | Gráfico                                      |
+| ---------------------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| ![Modo Escuro](./assets/screenshots/modo-escuro.png) | ![Web](./assets/screenshots/web.png) | ![Gráfico](./assets/screenshots/grafico.png) |
 
 ---
 
@@ -292,13 +376,17 @@ Usuário abre o app
         ↓
 Loading inicial
         ↓
-Dashboard
+Home
         ↓
 Consulta clima externo pela OpenWeather
         ↓
 Exibe sensores simulados do cultivo
         ↓
-Gera alertas com base nos sensores
+Usuário acessa o Dashboard
+        ↓
+Visualiza análise do cultivo e gráfico dos sensores
+        ↓
+Alertas são gerados com base nos sensores
         ↓
 Usuário pode salvar leituras no histórico
         ↓
@@ -316,9 +404,15 @@ Usuário pode ajustar tema e cidade padrão nas configurações
            │
            ▼
 ┌──────────────────────┐
-│      Dashboard       │
+│        Home          │
 │ Clima + Sensores     │
 │ NASA APOD            │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│      Dashboard       │
+│ Análise + Gráfico    │
 └──────────┬───────────┘
            │
  ┌─────────┼─────────┬─────────────┬──────────────┐
@@ -346,25 +440,19 @@ simulados Recom.    salvas        Preferências   NASA APOD
 Clone o repositório:
 
 ```bash
-git clone [url-do-repositorio]
+git clone https://github.com/jorgebooz/Agrosfera-Mobile
 ```
 
 Acesse a pasta do projeto:
 
 ```bash
-cd AgrosferaMobile
+cd Agrosfera-Mobile
 ```
 
 Instale as dependências:
 
 ```bash
 npm install
-```
-
-Instale dependências nativas do Expo, se necessário:
-
-```bash
-npx expo install
 ```
 
 Crie o arquivo `.env` na raiz do projeto:
@@ -415,27 +503,6 @@ Ou escaneie o QR Code com o aplicativo Expo Go.
 
 ---
 
-## ✅ Requisitos Atendidos
-
-| Requisito                  | Como foi atendido                                          | Status |
-| -------------------------- | ---------------------------------------------------------- | ------ |
-| React Native               | Aplicativo desenvolvido em React Native                    | ✅      |
-| Expo SDK 55                | Projeto criado com template Expo SDK 55                    | ✅      |
-| TypeScript                 | Tipagens para sensores, clima, NASA, histórico e navegação | ✅      |
-| Navegação                  | Bottom Tabs com ícones                                     | ✅      |
-| Consumo de API             | OpenWeather e NASA APOD                                    | ✅      |
-| Armazenamento interno      | Histórico, tema e cidade padrão                            | ✅      |
-| Organização de componentes | Estrutura em `src/` com separação por responsabilidade     | ✅      |
-| Interface funcional        | Telas navegáveis e fluxos completos                        | ✅      |
-| Dark mode                  | Tema claro/escuro configurável                             | ✅      |
-| Loading states             | Loading inicial e ao trocar de telas                       | ✅      |
-| README                     | Documentação completa do projeto                           | ✅      |
-| Android                    | Executável via Expo                                        | ✅      |
-| iOS                        | Compatível via Expo Go                                     | ✅      |
-| Web                        | Compatível via Expo Web                                    | ✅      |
-
----
-
 ## 📌 Observações da Entrega
 
 * O projeto não contém `node_modules` no repositório.
@@ -443,6 +510,8 @@ Ou escaneie o QR Code com o aplicativo Expo Go.
 * A chave da OpenWeather deve ser criada individualmente por quem executar o projeto.
 * A NASA APOD utiliza `DEMO_KEY` por padrão, podendo ser substituída por uma chave real.
 * Os sensores do cultivo são simulados para representar o comportamento de dispositivos IoT.
+* Android e Web foram testados durante o desenvolvimento.
+* iOS é compatível via Expo Go, mas não foi validado nesta entrega por instabilidade de conexão.
 * O app foi desenvolvido com foco acadêmico, funcional e demonstrativo.
 
 ---
@@ -453,4 +522,6 @@ Projeto acadêmico desenvolvido para a **FIAP — Global Solution 2025**.
 
 ---
 
-[GitHub](https://github.com/jorgebooz/Agrosfera-Mobile)
+## 🔗 Repositório
+
+[GitHub — Agrosfera Mobile](https://github.com/jorgebooz/Agrosfera-Mobile)
