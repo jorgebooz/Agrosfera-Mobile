@@ -3,6 +3,7 @@ export type RootStackParamList = {
 };
 
 export type RootTabParamList = {
+  Home: undefined;
   Dashboard: undefined;
   Monitoring: undefined;
   Alerts: undefined;

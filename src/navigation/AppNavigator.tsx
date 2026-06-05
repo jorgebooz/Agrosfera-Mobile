@@ -7,6 +7,7 @@ import { useAppTheme } from '../contexts/ThemeContext';
 import { AlertsScreen } from '../screens/AlertsScreen';
 import { DashboardScreen } from '../screens/DashboardScreen';
 import { HistoryScreen } from '../screens/HistoryScreen';
+import { HomeScreen } from '../screens/HomeScreen';
 import { MonitoringScreen } from '../screens/MonitoringScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { RootStackParamList, RootTabParamList } from '../types/navigation';
@@ -15,8 +16,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 type TabIconName =
-  | 'grid-outline'
-  | 'grid'
+  | 'home-outline'
+  | 'home'
+  | 'bar-chart-outline'
+  | 'bar-chart'
   | 'analytics-outline'
   | 'analytics'
   | 'warning-outline'
@@ -31,18 +34,26 @@ function getTabIconName(
   focused: boolean
 ): TabIconName {
   switch (routeName) {
+    case 'Home':
+      return focused ? 'home' : 'home-outline';
+
     case 'Dashboard':
-      return focused ? 'grid' : 'grid-outline';
+      return focused ? 'bar-chart' : 'bar-chart-outline';
+
     case 'Monitoring':
       return focused ? 'analytics' : 'analytics-outline';
+
     case 'Alerts':
       return focused ? 'warning' : 'warning-outline';
+
     case 'History':
       return focused ? 'time' : 'time-outline';
+
     case 'Settings':
       return focused ? 'settings' : 'settings-outline';
+
     default:
-      return focused ? 'grid' : 'grid-outline';
+      return focused ? 'home' : 'home-outline';
   }
 }
 
@@ -69,7 +80,7 @@ function MainTabs() {
           paddingBottom: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '700',
         },
         tabBarIcon: ({ focused, color, size }) => {
@@ -82,6 +93,12 @@ function MainTabs() {
         },
       })}
     >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: 'Home' }}
+      />
+
       <Tab.Screen
         name="Dashboard"
         component={DashboardScreen}
