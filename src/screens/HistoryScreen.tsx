@@ -2,15 +2,16 @@ import { useCallback, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
+import { AnimatedPressable } from '../components/AnimatedPressable';
 import { FadeInView } from '../components/FadeInView';
 import { ListSkeleton } from '../components/ListSkeleton';
-import { AnimatedPressable } from '../components/AnimatedPressable';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import {
@@ -26,6 +27,7 @@ export function HistoryScreen() {
   const { theme } = useAppTheme();
 
   const [history, setHistory] = useState<SensorHistoryRecord[]>([]);
+  const [isClearingHistory, setIsClearingHistory] = useState(false);
 
   const isLoading = useScreenLoading();
   const styles = createStyles(theme);
@@ -41,7 +43,49 @@ export function HistoryScreen() {
     }, [loadHistory])
   );
 
-  async function handleClearHistory() {
+  async function clearHistory() {
+    try {
+      setIsClearingHistory(true);
+      await clearSensorHistory();
+      setHistory([]);
+
+      if (Platform.OS === 'web') {
+        window.alert('As leituras salvas foram apagadas com sucesso.');
+        return;
+      }
+
+      Alert.alert(
+        'Histórico limpo',
+        'As leituras salvas foram apagadas com sucesso.'
+      );
+    } catch {
+      if (Platform.OS === 'web') {
+        window.alert('Não foi possível apagar o histórico agora.');
+        return;
+      }
+
+      Alert.alert(
+        'Erro ao limpar',
+        'Não foi possível apagar o histórico agora.'
+      );
+    } finally {
+      setIsClearingHistory(false);
+    }
+  }
+
+  function handleClearHistory() {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        'Tem certeza que deseja apagar todas as leituras salvas?'
+      );
+
+      if (confirmed) {
+        clearHistory();
+      }
+
+      return;
+    }
+
     Alert.alert(
       'Limpar histórico',
       'Tem certeza que deseja apagar todas as leituras salvas?',
@@ -53,10 +97,7 @@ export function HistoryScreen() {
         {
           text: 'Limpar',
           style: 'destructive',
-          onPress: async () => {
-            await clearSensorHistory();
-            setHistory([]);
-          },
+          onPress: clearHistory,
         },
       ]
     );
@@ -91,10 +132,16 @@ export function HistoryScreen() {
       {history.length > 0 && (
         <FadeInView delay={120}>
           <AnimatedPressable
-            style={styles.clearButton}
+            style={[
+              styles.clearButton,
+              isClearingHistory && styles.disabledButton,
+            ]}
             onPress={handleClearHistory}
+            disabled={isClearingHistory}
           >
-            <Text style={styles.clearButtonText}>Limpar histórico</Text>
+            <Text style={styles.clearButtonText}>
+              {isClearingHistory ? 'Limpando...' : 'Limpar histórico'}
+            </Text>
           </AnimatedPressable>
         </FadeInView>
       )}
@@ -231,17 +278,23 @@ function createStyles(theme: AppTheme) {
       marginBottom: theme.spacing.lg,
     },
     clearButton: {
-      backgroundColor: theme.colors.tertiary,
+      backgroundColor: '#D94F30',
       borderRadius: theme.radius.md,
       paddingVertical: theme.spacing.md,
       paddingHorizontal: theme.spacing.lg,
       alignItems: 'center',
       marginBottom: theme.spacing.lg,
+      borderWidth: 1,
+      borderColor: '#F26A1B',
     },
     clearButtonText: {
       color: '#FFFFFF',
       fontSize: 15,
-      fontWeight: '800',
+      fontWeight: '900',
+      letterSpacing: 0.2,
+    },
+    disabledButton: {
+      opacity: 0.6,
     },
     emptyCard: {
       backgroundColor: theme.colors.surface,
