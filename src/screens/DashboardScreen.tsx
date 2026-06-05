@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-
-import { LoadingScreen } from '../components/LoadingScreen';
+import { SensorStatusChart } from '../components/SensorStatusChart';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import { getAPOD } from '../services/nasaService';
@@ -226,6 +225,12 @@ export function DashboardScreen() {
           <Text style={styles.metricLabel}>Críticos</Text>
         </View>
       </View>
+
+      <SensorStatusChart
+        ideal={summary.ideal}
+        attention={summary.attention}
+        critical={summary.critical}
+      />
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Indicadores principais</Text>
