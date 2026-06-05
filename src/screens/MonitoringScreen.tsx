@@ -1,14 +1,9 @@
 import { useEffect, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { LoadingScreen } from '../components/LoadingScreen';
+import { AnimatedPressable } from '../components/AnimatedPressable';
+import { FadeInView } from '../components/FadeInView';
+import { ListSkeleton } from '../components/ListSkeleton';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import { generateSimulatedSensors } from '../services/sensorService';
@@ -16,7 +11,6 @@ import { saveSensorHistoryRecord } from '../storage/historyStorage';
 import { AppTheme } from '../theme';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
-import { ListSkeleton } from '../components/ListSkeleton';
 
 export function MonitoringScreen() {
   const { theme } = useAppTheme();
@@ -80,45 +74,51 @@ export function MonitoringScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Monitoramento</Text>
-      <Text style={styles.subtitle}>
-        Sensores simulados atualizados automaticamente.
-      </Text>
-
-      <Pressable
-        style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-        onPress={handleSaveHistory}
-        disabled={isSaving || sensors.length === 0}
-      >
-        <Text style={styles.saveButtonText}>
-          {isSaving ? 'Salvando...' : 'Salvar leitura no histórico'}
+      <FadeInView delay={60}>
+        <Text style={styles.title}>Monitoramento</Text>
+        <Text style={styles.subtitle}>
+          Sensores simulados atualizados automaticamente.
         </Text>
-      </Pressable>
+      </FadeInView>
+
+      <FadeInView delay={120}>
+        <AnimatedPressable
+          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+          onPress={handleSaveHistory}
+          disabled={isSaving || sensors.length === 0}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? 'Salvando...' : 'Salvar leitura no histórico'}
+          </Text>
+        </AnimatedPressable>
+      </FadeInView>
 
       <FlatList
         data={sensors}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.sensorName}>{item.name}</Text>
+        renderItem={({ item, index }) => (
+          <FadeInView delay={180 + index * 70}>
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.sensorName}>{item.name}</Text>
 
-              <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
-                <Text style={styles.statusText}>
-                  {getStatusLabel(item.status)}
-                </Text>
+                <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
+                  <Text style={styles.statusText}>
+                    {getStatusLabel(item.status)}
+                  </Text>
+                </View>
               </View>
+
+              <Text style={styles.sensorValue}>
+                {item.value}
+                {item.unit}
+              </Text>
+
+              <Text style={styles.description}>{item.description}</Text>
             </View>
-
-            <Text style={styles.sensorValue}>
-              {item.value}
-              {item.unit}
-            </Text>
-
-            <Text style={styles.description}>{item.description}</Text>
-          </View>
+          </FadeInView>
         )}
       />
     </View>

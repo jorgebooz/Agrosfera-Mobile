@@ -2,14 +2,15 @@ import { useCallback, useState } from 'react';
 import {
   Alert,
   FlatList,
-  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { LoadingScreen } from '../components/LoadingScreen';
+import { FadeInView } from '../components/FadeInView';
+import { ListSkeleton } from '../components/ListSkeleton';
+import { AnimatedPressable } from '../components/AnimatedPressable';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import {
@@ -20,7 +21,6 @@ import { AppTheme } from '../theme';
 import { SensorHistoryRecord } from '../types/history';
 import { SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
-import { ListSkeleton } from '../components/ListSkeleton';
 
 export function HistoryScreen() {
   const { theme } = useAppTheme();
@@ -81,32 +81,41 @@ export function HistoryScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Histórico</Text>
-      <Text style={styles.subtitle}>
-        Acompanhe as leituras salvas dos sensores do cultivo.
-      </Text>
+      <FadeInView delay={60}>
+        <Text style={styles.title}>Histórico</Text>
+        <Text style={styles.subtitle}>
+          Acompanhe as leituras salvas dos sensores do cultivo.
+        </Text>
+      </FadeInView>
 
       {history.length > 0 && (
-        <Pressable style={styles.clearButton} onPress={handleClearHistory}>
-          <Text style={styles.clearButtonText}>Limpar histórico</Text>
-        </Pressable>
+        <FadeInView delay={120}>
+          <AnimatedPressable
+            style={styles.clearButton}
+            onPress={handleClearHistory}
+          >
+            <Text style={styles.clearButtonText}>Limpar histórico</Text>
+          </AnimatedPressable>
+        </FadeInView>
       )}
 
       {history.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Nenhuma leitura salva</Text>
-          <Text style={styles.emptyDescription}>
-            Acesse a tela Monitoramento e toque em “Salvar leitura no histórico”
-            para acompanhar os dados depois.
-          </Text>
-        </View>
+        <FadeInView delay={160}>
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>Nenhuma leitura salva</Text>
+            <Text style={styles.emptyDescription}>
+              Acesse a tela Monitoramento e toque em “Salvar leitura no histórico”
+              para acompanhar os dados depois.
+            </Text>
+          </View>
+        </FadeInView>
       ) : (
         <FlatList
           data={history}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             const criticalCount = item.sensors.filter(
               (sensor) => sensor.status === 'critical'
             ).length;
@@ -120,68 +129,70 @@ export function HistoryScreen() {
             ).length;
 
             return (
-              <View style={styles.historyCard}>
-                <View style={styles.historyHeader}>
-                  <View>
-                    <Text style={styles.historyTitle}>Leitura registrada</Text>
-                    <Text style={styles.historyDate}>
-                      {formatDate(item.createdAt)}
-                    </Text>
-                  </View>
-
-                  <View style={styles.totalBadge}>
-                    <Text style={styles.totalBadgeText}>
-                      {item.sensors.length} sensores
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.summaryRow}>
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, styles.idealText]}>
-                      {idealCount}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Ideais</Text>
-                  </View>
-
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, styles.warningText]}>
-                      {attentionCount}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Atenção</Text>
-                  </View>
-
-                  <View style={styles.summaryItem}>
-                    <Text style={[styles.summaryValue, styles.criticalText]}>
-                      {criticalCount}
-                    </Text>
-                    <Text style={styles.summaryLabel}>Críticos</Text>
-                  </View>
-                </View>
-
-                <View style={styles.sensorList}>
-                  {item.sensors.map((sensor) => (
-                    <View key={sensor.id} style={styles.sensorRow}>
-                      <View style={styles.sensorInfo}>
-                        <Text style={styles.sensorName}>{sensor.name}</Text>
-                        <Text
-                          style={[
-                            styles.sensorStatus,
-                            getStatusTextStyle(sensor.status),
-                          ]}
-                        >
-                          {getStatusLabel(sensor.status)}
-                        </Text>
-                      </View>
-
-                      <Text style={styles.sensorValue}>
-                        {sensor.value}
-                        {sensor.unit}
+              <FadeInView delay={index * 80}>
+                <View style={styles.historyCard}>
+                  <View style={styles.historyHeader}>
+                    <View>
+                      <Text style={styles.historyTitle}>Leitura registrada</Text>
+                      <Text style={styles.historyDate}>
+                        {formatDate(item.createdAt)}
                       </Text>
                     </View>
-                  ))}
+
+                    <View style={styles.totalBadge}>
+                      <Text style={styles.totalBadgeText}>
+                        {item.sensors.length} sensores
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.summaryRow}>
+                    <View style={styles.summaryItem}>
+                      <Text style={[styles.summaryValue, styles.idealText]}>
+                        {idealCount}
+                      </Text>
+                      <Text style={styles.summaryLabel}>Ideais</Text>
+                    </View>
+
+                    <View style={styles.summaryItem}>
+                      <Text style={[styles.summaryValue, styles.warningText]}>
+                        {attentionCount}
+                      </Text>
+                      <Text style={styles.summaryLabel}>Atenção</Text>
+                    </View>
+
+                    <View style={styles.summaryItem}>
+                      <Text style={[styles.summaryValue, styles.criticalText]}>
+                        {criticalCount}
+                      </Text>
+                      <Text style={styles.summaryLabel}>Críticos</Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.sensorList}>
+                    {item.sensors.map((sensor) => (
+                      <View key={sensor.id} style={styles.sensorRow}>
+                        <View style={styles.sensorInfo}>
+                          <Text style={styles.sensorName}>{sensor.name}</Text>
+                          <Text
+                            style={[
+                              styles.sensorStatus,
+                              getStatusTextStyle(sensor.status),
+                            ]}
+                          >
+                            {getStatusLabel(sensor.status)}
+                          </Text>
+                        </View>
+
+                        <Text style={styles.sensorValue}>
+                          {sensor.value}
+                          {sensor.unit}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-              </View>
+              </FadeInView>
             );
           }}
         />

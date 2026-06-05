@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { LoadingScreen } from '../components/LoadingScreen';
+import { FadeInView } from '../components/FadeInView';
+import { ListSkeleton } from '../components/ListSkeleton';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
 import { generateAlertsFromSensors } from '../services/alertService';
 import { generateSimulatedSensors } from '../services/sensorService';
 import { AppTheme } from '../theme';
 import { CultivationAlert } from '../types/alert';
-import { ListSkeleton } from '../components/ListSkeleton';
 
 export function AlertsScreen() {
   const { theme } = useAppTheme();
@@ -31,8 +31,13 @@ export function AlertsScreen() {
   }, []);
 
   const summary = useMemo(() => {
-    const critical = alerts.filter((alert) => alert.severity === 'critical').length;
-    const attention = alerts.filter((alert) => alert.severity === 'attention').length;
+    const critical = alerts.filter(
+      (alert) => alert.severity === 'critical'
+    ).length;
+
+    const attention = alerts.filter(
+      (alert) => alert.severity === 'attention'
+    ).length;
 
     return {
       total: alerts.length,
@@ -74,65 +79,71 @@ export function AlertsScreen() {
         Recomendações geradas a partir dos sensores do cultivo.
       </Text>
 
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryValue}>{summary.total}</Text>
-          <Text style={styles.summaryLabel}>Alertas ativos</Text>
+      <FadeInView delay={100}>
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{summary.total}</Text>
+            <Text style={styles.summaryLabel}>Alertas ativos</Text>
+          </View>
+
+          <View style={styles.summaryDivider} />
+
+          <View style={styles.summaryItem}>
+            <Text style={[styles.summaryValue, styles.criticalText]}>
+              {summary.critical}
+            </Text>
+            <Text style={styles.summaryLabel}>Críticos</Text>
+          </View>
+
+          <View style={styles.summaryDivider} />
+
+          <View style={styles.summaryItem}>
+            <Text style={[styles.summaryValue, styles.warningText]}>
+              {summary.attention}
+            </Text>
+            <Text style={styles.summaryLabel}>Atenção</Text>
+          </View>
         </View>
-
-        <View style={styles.summaryDivider} />
-
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryValue, styles.criticalText]}>
-            {summary.critical}
-          </Text>
-          <Text style={styles.summaryLabel}>Críticos</Text>
-        </View>
-
-        <View style={styles.summaryDivider} />
-
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryValue, styles.warningText]}>
-            {summary.attention}
-          </Text>
-          <Text style={styles.summaryLabel}>Atenção</Text>
-        </View>
-      </View>
+      </FadeInView>
 
       {alerts.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Nenhum alerta ativo</Text>
-          <Text style={styles.emptyDescription}>
-            Todos os sensores estão dentro da faixa ideal no momento.
-          </Text>
-        </View>
+        <FadeInView delay={180}>
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>Nenhum alerta ativo</Text>
+            <Text style={styles.emptyDescription}>
+              Todos os sensores estão dentro da faixa ideal no momento.
+            </Text>
+          </View>
+        </FadeInView>
       ) : (
         <FlatList
           data={alerts}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={[styles.alertCard, getAlertCardStyle(item.severity)]}>
-              <View style={styles.alertHeader}>
-                <Text style={styles.alertTitle}>{item.title}</Text>
+          renderItem={({ item, index }) => (
+            <FadeInView delay={160 + index * 80}>
+              <View style={[styles.alertCard, getAlertCardStyle(item.severity)]}>
+                <View style={styles.alertHeader}>
+                  <Text style={styles.alertTitle}>{item.title}</Text>
 
-                <View style={[styles.badge, getBadgeStyle(item.severity)]}>
-                  <Text style={styles.badgeText}>
-                    {item.severity === 'critical' ? 'Crítico' : 'Atenção'}
+                  <View style={[styles.badge, getBadgeStyle(item.severity)]}>
+                    <Text style={styles.badgeText}>
+                      {item.severity === 'critical' ? 'Crítico' : 'Atenção'}
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.alertDescription}>{item.description}</Text>
+
+                <View style={styles.recommendationBox}>
+                  <Text style={styles.recommendationLabel}>Recomendação</Text>
+                  <Text style={styles.recommendationText}>
+                    {item.recommendation}
                   </Text>
                 </View>
               </View>
-
-              <Text style={styles.alertDescription}>{item.description}</Text>
-
-              <View style={styles.recommendationBox}>
-                <Text style={styles.recommendationLabel}>Recomendação</Text>
-                <Text style={styles.recommendationText}>
-                  {item.recommendation}
-                </Text>
-              </View>
-            </View>
+            </FadeInView>
           )}
         />
       )}

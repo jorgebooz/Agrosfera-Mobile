@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+
+import { DashboardSkeleton } from '../components/DashboardSkeleton';
+import { FadeInView } from '../components/FadeInView';
 import { SensorStatusChart } from '../components/SensorStatusChart';
 import { useAppTheme } from '../contexts/ThemeContext';
 import { useScreenLoading } from '../hooks/useScreenLoading';
@@ -13,7 +16,6 @@ import { APODData } from '../types/nasa';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { WeatherData } from '../types/weather';
 import { getStatusLabel } from '../utils/status';
-import { DashboardSkeleton } from '../components/DashboardSkeleton';
 
 export function DashboardScreen() {
   const { theme } = useAppTheme();
@@ -73,8 +75,12 @@ export function DashboardScreen() {
   const summary = useMemo(() => {
     const total = sensors.length;
     const ideal = sensors.filter((sensor) => sensor.status === 'ideal').length;
-    const attention = sensors.filter((sensor) => sensor.status === 'attention').length;
-    const critical = sensors.filter((sensor) => sensor.status === 'critical').length;
+    const attention = sensors.filter(
+      (sensor) => sensor.status === 'attention'
+    ).length;
+    const critical = sensors.filter(
+      (sensor) => sensor.status === 'critical'
+    ).length;
 
     let generalStatus: SensorStatus = 'ideal';
 
@@ -148,151 +154,172 @@ export function DashboardScreen() {
         Monitoramento inteligente para ambientes de cultivo controlado.
       </Text>
 
-      <View style={[styles.statusCard, getStatusCardStyle(summary.generalStatus)]}>
-        <Text style={styles.statusLabel}>Status geral</Text>
-        <Text style={styles.statusTitle}>{getStatusLabel(summary.generalStatus)}</Text>
-        <Text style={styles.statusDescription}>
-          {getStatusDescription(summary.generalStatus)}
-        </Text>
-      </View>
-
-      <View style={styles.weatherCard}>
-        <View style={styles.weatherHeader}>
-          <View>
-            <Text style={styles.weatherLabel}>Clima externo</Text>
-            <Text style={styles.weatherCity}>
-              {weather?.city || 'Cidade não carregada'}
-            </Text>
-          </View>
-
-          <Text style={styles.weatherTemperature}>
-            {weather ? `${weather.temperature}°C` : '--°C'}
+      <FadeInView delay={80}>
+        <View style={[styles.statusCard, getStatusCardStyle(summary.generalStatus)]}>
+          <Text style={styles.statusLabel}>Status geral</Text>
+          <Text style={styles.statusTitle}>
+            {getStatusLabel(summary.generalStatus)}
+          </Text>
+          <Text style={styles.statusDescription}>
+            {getStatusDescription(summary.generalStatus)}
           </Text>
         </View>
+      </FadeInView>
 
-        {weatherError ? (
-          <Text style={styles.errorText}>{weatherError}</Text>
-        ) : (
-          <>
-            <Text style={styles.weatherDescription}>
-              {weather?.description || 'Aguardando dados climáticos'}
+      <FadeInView delay={140}>
+        <View style={styles.weatherCard}>
+          <View style={styles.weatherHeader}>
+            <View>
+              <Text style={styles.weatherLabel}>Clima externo</Text>
+              <Text style={styles.weatherCity}>
+                {weather?.city || 'Cidade não carregada'}
+              </Text>
+            </View>
+
+            <Text style={styles.weatherTemperature}>
+              {weather ? `${weather.temperature}°C` : '--°C'}
             </Text>
-
-            <View style={styles.weatherDetails}>
-              <View style={styles.weatherDetailItem}>
-                <Text style={styles.weatherDetailValue}>
-                  {weather ? `${weather.humidity}%` : '--'}
-                </Text>
-                <Text style={styles.weatherDetailLabel}>Umidade</Text>
-              </View>
-
-              <View style={styles.weatherDetailItem}>
-                <Text style={styles.weatherDetailValue}>
-                  {weather ? `${weather.feelsLike}°C` : '--'}
-                </Text>
-                <Text style={styles.weatherDetailLabel}>Sensação</Text>
-              </View>
-
-              <View style={styles.weatherDetailItem}>
-                <Text style={styles.weatherDetailValue}>
-                  {weather ? `${weather.windSpeed} m/s` : '--'}
-                </Text>
-                <Text style={styles.weatherDetailLabel}>Vento</Text>
-              </View>
-            </View>
-          </>
-        )}
-      </View>
-
-      <View style={styles.metricsGrid}>
-        <View style={styles.metricCard}>
-          <Text style={styles.metricValue}>{summary.total}</Text>
-          <Text style={styles.metricLabel}>Sensores ativos</Text>
-        </View>
-
-        <View style={styles.metricCard}>
-          <Text style={styles.metricValue}>{summary.ideal}</Text>
-          <Text style={styles.metricLabel}>Em estado ideal</Text>
-        </View>
-
-        <View style={styles.metricCard}>
-          <Text style={styles.metricValue}>{summary.attention}</Text>
-          <Text style={styles.metricLabel}>Em atenção</Text>
-        </View>
-
-        <View style={styles.metricCard}>
-          <Text style={styles.metricValue}>{summary.critical}</Text>
-          <Text style={styles.metricLabel}>Críticos</Text>
-        </View>
-      </View>
-
-      <SensorStatusChart
-        ideal={summary.ideal}
-        attention={summary.attention}
-        critical={summary.critical}
-      />
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Indicadores principais</Text>
-
-        {mainSensors.map((sensor) => (
-          <View key={sensor.id} style={styles.sensorRow}>
-            <View style={styles.sensorInfo}>
-              <Text style={styles.sensorName}>{sensor.name}</Text>
-              <Text style={styles.sensorDescription}>{sensor.description}</Text>
-            </View>
-
-            <View style={styles.sensorValueWrapper}>
-              <Text style={styles.sensorValue}>
-                {sensor.value}
-                {sensor.unit}
-              </Text>
-              <Text style={[styles.sensorStatus, getStatusTextStyle(sensor.status)]}>
-                {getStatusLabel(sensor.status)}
-              </Text>
-            </View>
           </View>
-        ))}
-      </View>
 
-      <View style={styles.apodCard}>
-        <Text style={styles.apodKicker}>NASA APOD</Text>
-        <Text style={styles.apodTitle}>Inspiração espacial do dia</Text>
+          {weatherError ? (
+            <Text style={styles.errorText}>{weatherError}</Text>
+          ) : (
+            <>
+              <Text style={styles.weatherDescription}>
+                {weather?.description || 'Aguardando dados climáticos'}
+              </Text>
 
-        {apodError ? (
-          <Text style={styles.errorText}>{apodError}</Text>
-        ) : (
-          <>
-            {apod?.mediaType === 'image' ? (
-              <Image source={{ uri: apod.url }} style={styles.apodImage} />
-            ) : (
-              <View style={styles.apodFallback}>
-                <Text style={styles.apodFallbackText}>
-                  Conteúdo espacial disponível, mas o formato de hoje não é uma imagem.
+              <View style={styles.weatherDetails}>
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailValue}>
+                    {weather ? `${weather.humidity}%` : '--'}
+                  </Text>
+                  <Text style={styles.weatherDetailLabel}>Umidade</Text>
+                </View>
+
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailValue}>
+                    {weather ? `${weather.feelsLike}°C` : '--'}
+                  </Text>
+                  <Text style={styles.weatherDetailLabel}>Sensação</Text>
+                </View>
+
+                <View style={styles.weatherDetailItem}>
+                  <Text style={styles.weatherDetailValue}>
+                    {weather ? `${weather.windSpeed} m/s` : '--'}
+                  </Text>
+                  <Text style={styles.weatherDetailLabel}>Vento</Text>
+                </View>
+              </View>
+            </>
+          )}
+        </View>
+      </FadeInView>
+
+      <FadeInView delay={200}>
+        <View style={styles.metricsGrid}>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>{summary.total}</Text>
+            <Text style={styles.metricLabel}>Sensores ativos</Text>
+          </View>
+
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>{summary.ideal}</Text>
+            <Text style={styles.metricLabel}>Em estado ideal</Text>
+          </View>
+
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>{summary.attention}</Text>
+            <Text style={styles.metricLabel}>Em atenção</Text>
+          </View>
+
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>{summary.critical}</Text>
+            <Text style={styles.metricLabel}>Críticos</Text>
+          </View>
+        </View>
+      </FadeInView>
+
+      <FadeInView delay={260}>
+        <SensorStatusChart
+          ideal={summary.ideal}
+          attention={summary.attention}
+          critical={summary.critical}
+        />
+      </FadeInView>
+
+      <FadeInView delay={320}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Indicadores principais</Text>
+
+          {mainSensors.map((sensor) => (
+            <View key={sensor.id} style={styles.sensorRow}>
+              <View style={styles.sensorInfo}>
+                <Text style={styles.sensorName}>{sensor.name}</Text>
+                <Text style={styles.sensorDescription}>{sensor.description}</Text>
+              </View>
+
+              <View style={styles.sensorValueWrapper}>
+                <Text style={styles.sensorValue}>
+                  {sensor.value}
+                  {sensor.unit}
+                </Text>
+                <Text
+                  style={[styles.sensorStatus, getStatusTextStyle(sensor.status)]}
+                >
+                  {getStatusLabel(sensor.status)}
                 </Text>
               </View>
-            )}
+            </View>
+          ))}
+        </View>
+      </FadeInView>
 
-            <Text style={styles.apodName}>{apod?.title || 'Carregando título'}</Text>
-            <Text style={styles.apodDate}>{apod?.date || '--'}</Text>
-            <Text style={styles.apodDescription}>
-              {shortenText(
-                apod?.explanation ||
-                  'Aguardando descrição da imagem astronômica do dia.'
+      <FadeInView delay={380}>
+        <View style={styles.apodCard}>
+          <Text style={styles.apodKicker}>NASA APOD</Text>
+          <Text style={styles.apodTitle}>Inspiração espacial do dia</Text>
+
+          {apodError ? (
+            <Text style={styles.errorText}>{apodError}</Text>
+          ) : (
+            <>
+              {apod?.mediaType === 'image' ? (
+                <Image source={{ uri: apod.url }} style={styles.apodImage} />
+              ) : (
+                <View style={styles.apodFallback}>
+                  <Text style={styles.apodFallbackText}>
+                    Conteúdo espacial disponível, mas o formato de hoje não é uma
+                    imagem.
+                  </Text>
+                </View>
               )}
-            </Text>
-          </>
-        )}
-      </View>
 
-      <View style={styles.spaceCard}>
-        <Text style={styles.spaceTitle}>Conexão espacial</Text>
-        <Text style={styles.spaceText}>
-          O Agrosfera aplica a lógica de ambientes extremos, como bases lunares e
-          habitats remotos, para tornar o cultivo na Terra mais eficiente,
-          sustentável e monitorado por dados.
-        </Text>
-      </View>
+              <Text style={styles.apodName}>
+                {apod?.title || 'Carregando título'}
+              </Text>
+              <Text style={styles.apodDate}>{apod?.date || '--'}</Text>
+              <Text style={styles.apodDescription}>
+                {shortenText(
+                  apod?.explanation ||
+                    'Aguardando descrição da imagem astronômica do dia.'
+                )}
+              </Text>
+            </>
+          )}
+        </View>
+      </FadeInView>
+
+      <FadeInView delay={440}>
+        <View style={styles.spaceCard}>
+          <Text style={styles.spaceTitle}>Conexão espacial</Text>
+          <Text style={styles.spaceText}>
+            O Agrosfera aplica a lógica de ambientes extremos, como bases lunares
+            e habitats remotos, para tornar o cultivo na Terra mais eficiente,
+            sustentável e monitorado por dados.
+          </Text>
+        </View>
+      </FadeInView>
     </ScrollView>
   );
 }
