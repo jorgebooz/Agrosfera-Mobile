@@ -20,6 +20,7 @@ import { AppTheme } from '../theme';
 import { SensorHistoryRecord } from '../types/history';
 import { SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
+import { ListSkeleton } from '../components/ListSkeleton';
 
 export function HistoryScreen() {
   const { theme } = useAppTheme();
@@ -75,7 +76,7 @@ export function HistoryScreen() {
   }
 
   if (isLoading) {
-    return <LoadingScreen message="Buscando histórico de leituras..." />;
+    return <ListSkeleton titleWidth="48%" subtitleWidth="88%" items={3} />;
   }
 
   return (

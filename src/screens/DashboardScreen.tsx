@@ -14,6 +14,7 @@ import { APODData } from '../types/nasa';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { WeatherData } from '../types/weather';
 import { getStatusLabel } from '../utils/status';
+import { DashboardSkeleton } from '../components/DashboardSkeleton';
 
 export function DashboardScreen() {
   const { theme } = useAppTheme();
@@ -137,7 +138,7 @@ export function DashboardScreen() {
   }
 
   if (isLoading) {
-    return <LoadingScreen message="Carregando dashboard do cultivo..." />;
+    return <DashboardSkeleton />;
   }
 
   return (

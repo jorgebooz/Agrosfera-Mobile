@@ -8,6 +8,7 @@ import { generateAlertsFromSensors } from '../services/alertService';
 import { generateSimulatedSensors } from '../services/sensorService';
 import { AppTheme } from '../theme';
 import { CultivationAlert } from '../types/alert';
+import { ListSkeleton } from '../components/ListSkeleton';
 
 export function AlertsScreen() {
   const { theme } = useAppTheme();
@@ -63,7 +64,7 @@ export function AlertsScreen() {
   }
 
   if (isLoading) {
-    return <LoadingScreen message="Verificando alertas do ambiente..." />;
+    return <ListSkeleton titleWidth="42%" subtitleWidth="92%" items={3} />;
   }
 
   return (

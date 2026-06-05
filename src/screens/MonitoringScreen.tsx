@@ -16,6 +16,7 @@ import { saveSensorHistoryRecord } from '../storage/historyStorage';
 import { AppTheme } from '../theme';
 import { SensorData, SensorStatus } from '../types/sensor';
 import { getStatusLabel } from '../utils/status';
+import { ListSkeleton } from '../components/ListSkeleton';
 
 export function MonitoringScreen() {
   const { theme } = useAppTheme();
@@ -74,7 +75,7 @@ export function MonitoringScreen() {
   }
 
   if (isLoading) {
-    return <LoadingScreen message="Atualizando sensores do cultivo..." />;
+    return <ListSkeleton titleWidth="62%" showButton items={5} />;
   }
 
   return (
